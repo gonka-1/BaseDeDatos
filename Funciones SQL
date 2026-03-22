@@ -249,6 +249,95 @@ WHERE
     EXTRACT(YEAR FROM CRE.FECHA_SOLIC_CRED) = EXTRACT(YEAR FROM SYSDATE) - 1
 GROUP BY
     CLI.NUMRUN,CLI.DVRUN,CLI.PNOMBRE,CLI.SNOMBRE,CLI.APPATERNO,CLI.APMATERNO;
+---------------------------------------------------------------------------------   
+--CASO 03
+---------------------------------------------------------------------------------
+
+--TABLAS A TRABAJAR: 
+
+SELECT * FROM CREDITO_CLIENTE;
+SELECT * FROM CREDITO;
+
+-------------------------------------------------
+--CONSULTA CASO 03:
+-------------------------------------------------
+
+SELECT 
+    TO_CHAR(cc.FECHA_SOLIC_CRED, 'MM/YYYY') AS "MES TRANSACCIÓN",
+    c.NOMBRE_CREDITO AS "TIPO CRÉDITO",
+    TO_CHAR(cc.MONTO_SOLICITADO, '$999G999G999') AS "MONTO SOLICITADO CREDITO",
+    CASE
+        WHEN cc.MONTO_CREDITO BETWEEN 100000 AND 1000000 THEN TO_CHAR(cc.MONTO_CREDITO * 0.01, '$999G999G999')
+        WHEN cc.MONTO_CREDITO BETWEEN 1000001 AND 2000000 THEN TO_CHAR(cc.MONTO_CREDITO * 0.02, '$999G999G999')
+        WHEN cc.MONTO_CREDITO BETWEEN 2000001 AND 4000000 THEN TO_CHAR(cc.MONTO_CREDITO * 0.03, '$999G999G999')
+        WHEN cc.MONTO_CREDITO BETWEEN 4000001 AND 6000000 THEN TO_CHAR(cc.MONTO_CREDITO * 0.04, '$999G999G999')
+        WHEN cc.MONTO_CREDITO > 6000000 THEN TO_CHAR(cc.MONTO_CREDITO * 0.07, '$999G999G999')
+    END AS "APORTE A LA SBIF"
+FROM
+    CREDITO_CLIENTE cc JOIN CREDITO c
+    ON cc.COD_CREDITO = c.COD_CREDITO
+ORDER BY
+    cc.FECHA_SOLIC_CRED ASC, "TIPO CRÉDITO" ASC;
+
+---------------------------------------------------------------------------------   
+--CASO 04
+---------------------------------------------------------------------------------
+
+--TABLAS A TRABAJAR: 
+
+SELECT * FROM CLIENTE;
+SELECT * FROM PRODUCTO_INVERSION_CLIENTE;
+
+-------------------------------------------------
+--CONSULTA CASO 04:
+-------------------------------------------------
+
+SELECT 
+    TO_CHAR(c.NUMRUN, '09G999G999') || '-' || c.DVRUN AS "RUN CLIENTE",
+    c.PNOMBRE || ' ' || c.SNOMBRE || ' ' || c.APPATERNO || ' ' || c.APMATERNO AS "NOMBRE CLIENTE",
+    TO_CHAR(SUM(p.MONTO_TOTAL_AHORRADO), '$999G999G999') AS "MONTO TOTAL AHORRADO",
+    CASE 
+        WHEN SUM(p.MONTO_TOTAL_AHORRADO) BETWEEN 100000 AND 1000000 THEN 'BRONCE'
+        WHEN SUM(p.MONTO_TOTAL_AHORRADO) BETWEEN 1000001 AND 4000000 THEN 'PLATA'
+        WHEN SUM(p.MONTO_TOTAL_AHORRADO) BETWEEN 4000001 AND 8000000 THEN 'SILVER'
+        WHEN SUM(p.MONTO_TOTAL_AHORRADO) BETWEEN 8000001 AND 15000000 THEN 'GOLD'
+        WHEN SUM(p.MONTO_TOTAL_AHORRADO) > 15000000 THEN 'PLATINUM'
+    END AS "CATEGORIA CLIENTE"
+FROM
+    CLIENTE c JOIN PRODUCTO_INVERSION_CLIENTE p
+    ON c.nro_cliente = p.nro_cliente
+GROUP BY
+    c.NUMRUN, c.DVRUN, c.PNOMBRE, c.SNOMBRE, c.APPATERNO, c.APMATERNO
+ORDER BY 
+    c.APPATERNO ASC, SUM(p.MONTO_TOTAL_AHORRADO) DESC;
+
+---------------------------------------------------------------------------------   
+--CASO 05
+---------------------------------------------------------------------------------
+
+--TABLAS A TRABAJAR: 
+
+SELECT * FROM CLIENTE;
+SELECT * FROM PRODUCTO_INVERSION_CLIENTE;
+
+-------------------------------------------------
+--CONSULTA CASO 05:
+-------------------------------------------------
+
+SELECT 
+    TO_CHAR(p.FECHA_SOLIC_PROD, 'YYYY') AS "AÑO TRIBUTARIO",
+    TO_CHAR(c.NUMRUN, '09G999G999') || '-' || c.DVRUN AS "RUN CLIENTE",
+    INITCAP(c.PNOMBRE || ' ' || c.SNOMBRE || ' ' || c.APPATERNO || ' ' || c.APMATERNO) AS "NOMBRE CLIENTE",
+    COUNT(*) AS "TOTAL PROD. INV AFECTOS IMPTO",
+    TO_CHAR(SUM(p.MONTO_TOTAL_AHORRADO), '$999G999G999') AS "MONTO TOTAL AHORRADO"
+FROM 
+    PRODUCTO_INVERSION_CLIENTE p JOIN CLIENTE c
+    ON p.nro_cliente = c.nro_cliente
+GROUP BY
+    c.NUMRUN, c.DVRUN, c.PNOMBRE, c.SNOMBRE, c.APPATERNO, c.APMATERNO,TO_CHAR(p.FECHA_SOLIC_PROD, 'YYYY')
+ORDER BY 
+    "AÑO TRIBUTARIO" ASC,
+    c.APPATERNO ASC;
 
 +++ACTIVIDAD 1.4+++
 
