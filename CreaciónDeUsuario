@@ -50,6 +50,7 @@ GRANT UPDATE TO TIBURCIO;
 GRANT DELETE TO TIBURCIO;
 GRANT CREATE VIEW TO TIBURCIO;
 GRANT CREATE SEQUENCE TO TIBURCIO;
+GRANT CREATE ANY VIEW TO BDY1102_P6;
 --..Y MÁS PERMISOS
 
 --ASIGNAR ROL PREESTABLECIDO POR SISTEMA
@@ -105,5 +106,200 @@ IDENTIFIED BY BDY1102_P9_6
 DEFAULT TABLESPACE USERS
 TEMPORARY TABLESPACE TEMP;
 
+--==============================================================================
+--PASO 02 -- ASIGNACION DE ESPACIO DE CARPETA USERS
+--==============================================================================
 
-GRANT CREATE ANY VIEW TO BDY1102_P6;
+--*****ASIGNACION DE ESPACIO PARA USUARIO 1*****
+ALTER USER BDY1102_P9_1 QUOTA UNLIMITED ON USERS;
+
+--*****ASIGNACION DE ESPACIO PARA USUARIO 2*****
+ALTER USER BDY1102_P9_2 QUOTA UNLIMITED ON USERS;
+
+--*****ASIGNACION DE ESPACIO PARA USUARIO 3*****
+ALTER USER BDY1102_P9_3 QUOTA UNLIMITED ON USERS;
+
+--*****ASIGNACION DE ESPACIO PARA USUARIO 4*****
+ALTER USER BDY1102_P9_4 QUOTA 200M ON USERS;
+
+--*****ASIGNACION DE ESPACIO PARA USUARIO 5*****
+ALTER USER BDY1102_P9_5 QUOTA 150M ON USERS;
+
+--*****ASIGNACION DE ESPACIO PARA USUARIO 6*****
+ALTER USER BDY1102_P9_6 QUOTA 100M ON USERS;
+
+--==============================================================================
+--PASO 03 -- CREACION DE ROLES
+--==============================================================================
+
+--*****CREACION DE ROL PARA USUARIO 1
+CREATE ROLE R_USER_1;
+
+--*****CREACION DE ROL PARA USUARIO 2 Y 3
+CREATE ROLE R_USER_2_3;
+
+--*****CREACION DE ROL PARA USUARIO 4
+CREATE ROLE R_USER_4;
+
+--*****CREACION DE ROL PARA USUARIO 5 Y 6
+CREATE ROLE R_USER_5_6;
+
+--==============================================================================
+--PASO 04 -- ASIGNAR PERMISOS A ROL USUARIO 1
+--==============================================================================
+--***ASIGNAR ROL DE CONEXIÓN A BASE DE DATOS***
+GRANT CREATE SESSION TO R_USER_1;
+--***GESTIÓN DE TABLAS***
+--ASIGNAR ROL A ROL PARA GESTIÓN DE CRUD DE OBJEROS Y TABLAS: 
+
+/*GRANT CREATE TABLE TO R_USER_1;
+GRANT DROP TABLE TO R_USER_1;*/
+GRANT "RESOURCE" TO R_USER_1;
+/* 
+CREATE-MODIFY-DROP PARA OBJETOS DE LA BD (TABLE-FUNCTION-PROCEDURE-TRIGGER-VIEW-SYNONUM)
+SELECT-INSERT-UPDATE-DELETE PARA DATOS DE TABLAS
+*/
+
+--***ASIGNAR PERMISO PRA CREACION DE SECUENCIAS NUMERICAS AUTOINCREMENTALES***
+GRANT CREATE SEQUENCE TO R_USER_1;
+
+--***ASIGNAR PERMISO PARA CREACIÓN DE INDICES***
+GRANT CREATE ANY INDEX TO R_USER_1;
+--==============================================================================
+--PASO 05 -- ASIGNAR ROL A USUARIO 1
+--==============================================================================
+
+--***ASIGNAR ROL A USUARIO 1***
+GRANT "R_USER_1" TO BDY1102_P9_1;
+
+--==============================================================================
+--PASO 06 -- REVISAR ROLES Y USUARIO 
+--==============================================================================
+--***REVISAR ROLES Y PERMISOS DE UN USUARIO O ROL***
+
+SELECT * FROM DBA_ROLE_PRIVS
+WHERE  GRANTEE = UPPER('BDY1102_P9_1');
+        
+--***REVISAR PRIVILEGIOS Y PERMISOS QUE TIENE EL ROL***
+
+SELECT * FROM ROLE_SYS_PRIVS
+WHERE ROLE = UPPER('R_USER_1');
+
+--==============================================================================
+--PASO 07 -- CONECTARSE CON USUARIO 1 Y CARGAR LA BASE DE DATOS
+--==============================================================================
+/*
+
+-- IMPORTANTE --
+
+EN ESTE PASO, ES CRUCIAL CONECTARSE CON EL USUARIO 1, Y CARGAR LA BASE DE DATOS, DEBIDO A QUE LOS PERMISO DE ACCESO PARA ROLES DE USUARIO 2-3-4-5-6
+SON EN FUNCION DE LAS TABLAS DEL USUARIO 1, POR LO CUAL, NO SE PUEDE ASIGNAR UN PERMISO DE UNA TABLA QUE NO EXISTE
+*/
+
+
+--==============================================================================
+--PASO 08 -- CREACION DE SINONIMOS
+--==============================================================================
+
+--CREACION DE SINONIMO AL NOMBRE DE LA TABLA DEL USUARIO: TAMBIÉN PUEDE SER PRIVATE 
+
+
+--***CREACION DE SINONIMO A LA TABLA APORTE_A_SBIF
+CREATE OR REPLACE PUBLIC SYNONYM SYN_APO_SBIF
+FOR BDY1102_P9_1.APORTE_A_SBIF;
+
+--***CREACION DE SINONIMO A LA TABLA CLIENTE
+CREATE OR REPLACE PUBLIC SYNONYM SYN_CLI
+FOR BDY1102_P9_1.CLIENTE;
+
+--***CREACION DE SINONIMO A LA TABLA COMUNA
+CREATE OR REPLACE PUBLIC SYNONYM SYN_COM
+FOR BDY1102_P9_1.COMUNA;
+
+--***CREACION DE SINONIMO A LA TABLA CREDITO
+CREATE OR REPLACE PUBLIC SYNONYM SYN_CRE
+FOR BDY1102_P9_1.CREDITO;
+
+--***CREACION DE SINONIMO A LA TABLA CREDITO_CLIENTE
+CREATE OR REPLACE PUBLIC SYNONYM SYN_CRE_CLI
+FOR BDY1102_P9_1.CREDITO_CLIENTE;
+
+--***CREACION DE SINONIMO A LA TABLA CUOTA_CREDITO_CLIENTE
+CREATE OR REPLACE PUBLIC SYNONYM SYN_CUO_CRE_CLI
+FOR BDY1102_P9_1.CUOTA_CREDITO_CLIENTE;
+
+--***CREACION DE SINONIMO A LA TABLA FORMA_PAGO
+CREATE OR REPLACE PUBLIC SYNONYM SYN_FOR_PAG
+FOR BDY1102_P9_1.FORMA_PAGO;
+
+--***CREACION DE SINONIMO A LA TABLA MOVIMIENTO
+CREATE OR REPLACE PUBLIC SYNONYM SYN_MOV
+FOR BDY1102_P9_1.MOVIMIENTO;
+
+--***CREACION DE SINONIMO A LA TABLA PRODUCTO_INVERSION
+CREATE OR REPLACE PUBLIC SYNONYM SYN_PRO_INV
+FOR BDY1102_P9_1.PRODUCTO_INVERSION;
+
+--***CREACION DE SINONIMO A LA TABLA PRODUCTO_INVERSION_CLIENTE
+CREATE OR REPLACE PUBLIC SYNONYM SYN_PRO_INV_CLI
+FOR BDY1102_P9_1.PRODUCTO_INVERSION_CLIENTE;
+
+--***CREACION DE SINONIMO A LA TABLA PROFESION_OFICIO
+CREATE OR REPLACE PUBLIC SYNONYM SYN_PRO_OFI
+FOR BDY1102_P9_1.PROFESION_OFICIO;
+
+--***CREACION DE SINONIMO A LA TABLA PROVINCIA
+CREATE OR REPLACE PUBLIC SYNONYM SYN_PRO
+FOR BDY1102_P9_1.PROVINCIA;
+
+--***CREACION DE SINONIMO A LA TABLA REGION
+CREATE OR REPLACE PUBLIC SYNONYM SYN_REG
+FOR BDY1102_P9_1.REGION;
+
+--***CREACION DE SINONIMO A LA TABLA SUCURSAL
+CREATE OR REPLACE PUBLIC SYNONYM SYN_SUC
+FOR BDY1102_P9_1.SUCURSAL;
+
+--***CREACION DE SINONIMO A LA TABLA TIPO_CONTRATO
+CREATE OR REPLACE PUBLIC SYNONYM SYN_TIP_CON
+FOR BDY1102_P9_1.TIPO_CONTRATO;
+
+--***CREACION DE SINONIMO A LA TABLA TIPO_MOVIMIENTO
+CREATE OR REPLACE PUBLIC SYNONYM SYN_TIP_MOV
+FOR BDY1102_P9_1.TIPO_MOVIMIENTO;
+
+--ELIMINACIÓN DE SINONIMOS PUBLICOS: 
+--
+DROP PUBLIC SYNONYM SYN_TIP_MOV;
+
+--==============================================================================
+--PASO 08 -- ASIGNAR PERMISOS A ROL USUARIO 2 Y 3
+--==============================================================================
+
+--==============================================================================
+--PASO 09 -- ASIGNAR ROL A USUARIO 2 Y 3
+--==============================================================================
+
+--==============================================================================
+--PASO 10 -- ASIGNAR PERMISOS A ROL USUARIO 4
+--==============================================================================
+
+--==============================================================================
+--PASO 11 -- ASIGNAR ROL A USUARIO 4
+--==============================================================================
+
+--==============================================================================
+--PASO 12 -- ASIGNAR PERMISOS A ROL USUARIO 5 Y 6
+--==============================================================================
+
+--==============================================================================
+--PASO 13 -- ASIGNAR ROL A USUARIO 5 Y 6
+--==============================================================================
+
+--==============================================================================
+--PASO 14 -- CREACION DE PERFILES DE USUARIO
+--==============================================================================
+
+--==============================================================================
+--PASO 15 -- ASIGNACION DE PERFILES DE USUARIO
+--==============================================================================
