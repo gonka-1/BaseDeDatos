@@ -1,40 +1,58 @@
----------------------------------------------------------------------------------
---HOJA DE TRABAJO SQL:
----------------------------------------------------------------------------------
----------------------------------------------------------------------------------
---CASO 01:
----------------------------------------------------------------------------------
---TABLAS A TRABJAR:
+--==============================================================================
+--HOJA DE TRABAJO DE SQL
+--==============================================================================
+
+
+--==============================================================================
+--CASO 01
+--==============================================================================
+
+--TABLAS A TRABAJAR
 
 SELECT * FROM EMPLEADO;
 DESC EMPLEADO;
 
---CONSULTA 01:
+--CONSULTA
+SELECT
+    NUMRUT_EMP, DVRUT_0EMP,NOMBRE_EMP,APPATERNO_EMP,APMATERNO_EMP,SUELDO_EMP
+FROM
+    EMPLEADO
+;
 
-SELECT 
-    NUMRUT_EMP, DVRUT_EMP,NOMBRE_EMP,APPATERNO_EMP,APMATERNO_EMP, SUELDO_EMP 
-FROM    
-    EMPLEADO;
-    
-    
----------------------------------------------------------------------------------
---CASO 02:
----------------------------------------------------------------------------------
+--==============================================================================
+--CASO 02
+--==============================================================================
 
---TABLAS A TRABAJAR:
+--TABLAS A TRABAJAR
 
-SELECT * FROM CLIENTE;
-SELECT * FROM ESTADO_CIVIL;
+SELECT * FROM CLIENTE;          --CLI
+SELECT * FROM ESTADO_CIVIL;     --EC
 
-
---CONSULTA 02:
-
-SELECT 
+--CONSULTA CON DATOS A TRABAJAR
+SELECT
     CLI.NUMRUT_CLI, CLI.DVRUT_CLI, CLI.NOMBRE_CLI, CLI.APPATERNO_CLI, CLI.APMATERNO_CLI,
     CLI.RENTA_CLI, EC.DESC_ESTCIVIL
 FROM
-    CLIENTE CLI JOIN ESTADO_CIVIL EC
-    ON(CLI.ID_ESTCIVIL = EC.ID_ESTCIVIL);
+    CLIENTE CLI
+    JOIN ESTADO_CIVIL EC ON (CLI.ID_ESTCIVIL = EC.ID_ESTCIVIL);
+    
+---------------------------------------------------------------------------------
+--CASO 03
+---------------------------------------------------------------------------------
+
+--TABLAS A TRABAJAR: 
+
+SELECT * FROM EMPLEADO;
+
+
+--CONSULTA 03:
+
+SELECT 
+    NUMRUT_EMP,DVRUT_EMP,
+    NOMBRE_EMP||' '||APPATERNO_EMP||' '||APMATERNO_EMP,
+    SUELDO_EMP
+FROM
+    EMPLEADO;
 
 
 
@@ -93,9 +111,11 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE(' ');
     
     
-END;
+END; 
 
-/--SEPARACIÓN DE BLOQUE ANONIMO
+/
+
+--SEPARACIÓN DE BLOQUE ANONIMO
 
 ---------------------------------------------------------------------------------
 --CASO 02:
@@ -139,11 +159,88 @@ BEGIN
             IF V_RENTA >= V_RENTA_MINIMA THEN
             --PASA SI ES SEPARADO O DIVORCIADO Y CUMPLE UNA RENTA DE 800MIL
                 V_CUMPLE_REQUISITOS := TRUE;
-            END IF;
+            END IF;--SIEMPRE QUE SE INICIA UN "IF" SE TIENE QUE CERRAR CON UN "END IF".
         ELSE
             --PASA SI ES SOLTERO
             V_CUMPLE_REQUISITOS := TRUE;
         END IF;
     END IF;
+    
+    IF V_CUMPLE_REQUISITOS THEN
+        DBMS_OUTPUT.PUT_LINE('---------------------------------------------------');
+        DBMS_OUTPUT.PUT_LINE('DATOS DE CLIENTE');
+        DBMS_OUTPUT.PUT_LINE('---------------------------------------------------');
+        DBMS_OUTPUT.PUT_LINE('RUT CLIENTE: '||TO_CHAR(V_NUMRUT, '999G999G999')||'-'||V_DVRUT);
+        DBMS_OUTPUT.PUT_LINE('NOMBRE CLIENTE: '||V_NOMBRE||' '||V_APPATERNO||' '||V_APMATERNO);
+        DBMS_OUTPUT.PUT_LINE('ESTADO CIVIL: '||V_DESC_CIVIL);
+        DBMS_OUTPUT.PUT_LINE('RENTA CLIENTE: '||TO_CHAR(V_RENTA, '$999G999G999'));
+        DBMS_OUTPUT.PUT_LINE('---------------------------------------------------');
+        DBMS_OUTPUT.PUT_LINE('CUMPLE CON LOS REQUISITOS DER LA PROMOCION DE MARKETING');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('NO CUMPLE CON LOS REQUISITOS DE LA PROMOCION DE MARKETING.');
+    END IF;
+--TRY CATCH DE PL/SQL
+
+EXCEPTION 
+    WHEN NO_DATA_FOUND THEN 
+         DBMS_OUTPUT.PUT_LINE('NO SE HA ENCONTRADO EL RUT INGRESADO EN LA BASE DE DATOS');
+    WHEN OTHERS THEN
+          DBMS_OUTPUT.PUT_LINE('HA OCURRIDO UN ERROR INESPERADO');
+           DBMS_OUTPUT.PUT_LINE('CODIGO DE ERROR: '||SQLERRM);
+        
+
+END;
+
+/
+
+
+---------------------------------------------------------------------------------
+--CASO 03
+---------------------------------------------------------------------------------
+
+DECLARE 
+
+V_NUMRUT            EMPELADO.NUMRUT_EMP%TYPE;
+V_DVRUT             EMPLEADO.DVRUT_EMP%TYPE;
+V_NOMBRE            VARCHAR(100);
+V_SUELDO_REGULAR    EMPLEADO.SUELDO_EMP%TYPE;
+V_POR__1            NUMBER(1,1) := 8.5;
+V_POR__2            NUMBER(2) := 20;
+V_VAL_REAJ_1        NUMBER(10);
+V_VAL_REAJ_2        NUMBER(10);
+V_SUELDO_REAJ_1     NUMBER(10);
+V_SUELDO_REAJ_2     NUMBER(10);
+
+
+
+BEGIN
+
+    --INGRESO PARAMETRICO:
+    
+    V_NUMRUT := &INGRESAR_RUT;
+    
+    
+    
+    SELECT 
+        DVRUT_EMP,
+        NOMBRE_EMP||' '||APPATERNO_EMP||' '||APMATERNO_EMP,
+        SUELDO_EMP
+    INTO
+        V_DVRUT, V_NOMBRE, V_SUELDO_REGULAR
+    FROM
+        EMPLEADO
+    WHERE 
+        NUMRUT_EMP = V_NUMRUT;
+    
+    
+    --SIMULACION 01 - 8.5%
+    
+    V_VAL_REAJ_1 := V_SUELDO_REGULAR * (V_POR_REAJ_1/100);
+    V_SUELDO_REAJ_1 := V_SUELDO_REGULAR + V_VAL_REAJ_1;
+    
+    --SIMULACION 2 - 20% SI CUMPLE CON CODICIÓ N ENTRE 200.000 Y 400.000
+    
+    
+        
 
 END;
