@@ -14,7 +14,7 @@ DESC EMPLEADO;
 
 --CONSULTA
 SELECT
-    NUMRUT_EMP, DVRUT_0EMP,NOMBRE_EMP,APPATERNO_EMP,APMATERNO_EMP,SUELDO_EMP
+    NUMRUT_EMP, DVRUT_EMP,NOMBRE_EMP,APPATERNO_EMP,APMATERNO_EMP,SUELDO_EMP
 FROM
     EMPLEADO
 ;
@@ -53,6 +53,30 @@ SELECT
     SUELDO_EMP
 FROM
     EMPLEADO;
+
+---------------------------------------------------------------------------------
+--CASO 04
+---------------------------------------------------------------------------------
+
+--TABLAS A TRABAJAR: 
+SELECT * FROM PROPIEDAD;
+SELECT * FROM TIPO_PROPIEDAD;
+
+--CONSULTA 04: 
+
+SELECT 
+    ID_TIPO_PROPIEDAD, DESC_TIPO_PROPIEDAD
+FROM
+    TIPO_PROPIEDAD;
+    
+--CONSULTA PARA SUMAR VALORES DE ARRIENDO
+
+SELECT 
+    COUNT(*), VALOR_ARRIENDO  
+FROM
+    PROPIEDAD
+GROUP BY
+    VALOR_ARRIENDO;
 
 
 
@@ -193,54 +217,142 @@ END;
 
 /
 
-
----------------------------------------------------------------------------------
+--==============================================================================
 --CASO 03
----------------------------------------------------------------------------------
+--==============================================================================
 
-DECLARE 
-
-V_NUMRUT            EMPELADO.NUMRUT_EMP%TYPE;
-V_DVRUT             EMPLEADO.DVRUT_EMP%TYPE;
-V_NOMBRE            VARCHAR(100);
-V_SUELDO_REGULAR    EMPLEADO.SUELDO_EMP%TYPE;
-V_POR__1            NUMBER(1,1) := 8.5;
-V_POR__2            NUMBER(2) := 20;
-V_VAL_REAJ_1        NUMBER(10);
-V_VAL_REAJ_2        NUMBER(10);
-V_SUELDO_REAJ_1     NUMBER(10);
-V_SUELDO_REAJ_2     NUMBER(10);
-
+DECLARE
+V_NUMRUT                    EMPLEADO.NUMRUT_EMP%TYPE;
+V_DVRUT                     EMPLEADO.DVRUT_EMP%TYPE;
+V_NOMBRE                    VARCHAR2(100);
+V_SUELDO_REGULAR            EMPLEADO.SUELDO_EMP%TYPE;
+V_POR_REAJ_1                NUMBER(10) := 8.5;
+V_POR_REAJ_2                NUMBER(10) := 20;
+V_VAL_REAJ_1                NUMBER(10);
+V_VAL_REAJ_2                NUMBER(10);
+V_SUELDO_REAJ_1             NUMBER(10);
+V_SUELDO_REAJ_2             NUMBER(10);
+V_SUELDO_MIN                NUMBER(6):=200000;
+V_SUELDO_MAX                NUMBER(6):=400000; 
 
 
 BEGIN
 
-    --INGRESO PARAMETRICO:
-    
+    --INGRESO PARAMETRICO
     V_NUMRUT := &INGRESAR_RUT;
-    
-    
-    
-    SELECT 
+
+    SELECT
         DVRUT_EMP,
         NOMBRE_EMP||' '||APPATERNO_EMP||' '||APMATERNO_EMP,
         SUELDO_EMP
     INTO
-        V_DVRUT, V_NOMBRE, V_SUELDO_REGULAR
+        V_DVRUT,V_NOMBRE,V_SUELDO_REGULAR
     FROM
         EMPLEADO
-    WHERE 
+    WHERE
         NUMRUT_EMP = V_NUMRUT;
-    
-    
-    --SIMULACION 01 - 8.5%
-    
-    V_VAL_REAJ_1 := V_SUELDO_REGULAR * (V_POR_REAJ_1/100);
-    V_SUELDO_REAJ_1 := V_SUELDO_REGULAR + V_VAL_REAJ_1;
-    
-    --SIMULACION 2 - 20% SI CUMPLE CON CODICIÓ N ENTRE 200.000 Y 400.000
-    
-    
         
+    --SIMULACION 01 - 8.5%
+    V_VAL_REAJ_1        := V_SUELDO_REGULAR * (V_POR_REAJ_1/100);
+    V_SUELDO_REAJ_1     := V_SUELDO_REGULAR + V_VAL_REAJ_1;
+    
+    DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+    DBMS_OUTPUT.PUT_LINE('SIMULACIÓN 01 - CALCULO DE 8.5% DE AAUMENTO DE SUELDO');
+    DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+    DBMS_OUTPUT.PUT_LINE('-------------------DATOS EMPLEADO----------------------');
+    DBMS_OUTPUT.PUT_LINE('RUT EMPLEADO      : '||TO_CHAR(V_NUMRUT, '999G999G999')||V_DVRUT);
+    DBMS_OUTPUT.PUT_LINE('NOMBRE_EMPLEADO   : '||V_NOMBRE);
+    DBMS_OUTPUT.PUT_LINE('SUELDO ACTUAL     : '||TO_CHAR(V_SUELDO_REGULAR, '$999G999G999'));
+    DBMS_OUTPUT.PUT_LINE('REAJUSTE 8.5%     : '||TO_CHAR(V_VAL_REAJ_1, '$999G999G999'));
+    DBMS_OUTPUT.PUT_LINE('SUELDO REAJUSTADO : '||TO_CHAR(V_SUELDO_REAJ_1, '$999G999G999'));
+    DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+    
+    --SIMULACION 02 - 20% SI CUMPLE CON CONDICION ENTRE 200.000 Y 400.000
+    
+    IF V_SUELDO_REGULAR BETWEEN V_SUELDO_MIN AND V_SUELDO_MAX THEN
+    
+        --SIMULACION 02 - 20%%
+        V_VAL_REAJ_2       := V_SUELDO_REGULAR * (V_POR_REAJ_2/100);
+        V_SUELDO_REAJ_2     := V_SUELDO_REGULAR + V_VAL_REAJ_2;
+    
+            DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+            DBMS_OUTPUT.PUT_LINE('SIMULACIÓN 02 - CALCULO DE 20% DE AAUMENTO DE SUELDO');
+            DBMS_OUTPUT.PUT_LINE('-----RANGO DE SUELDO DE $200.00 A $400.000-------');
+            DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+            DBMS_OUTPUT.PUT_LINE('-------------------DATOS EMPLEADO----------------------');
+            DBMS_OUTPUT.PUT_LINE('RUT EMPLEADO      : '||TO_CHAR(V_NUMRUT, '999G999G999')||V_DVRUT);
+            DBMS_OUTPUT.PUT_LINE('NOMBRE_EMPLEADO   : '||V_NOMBRE);
+            DBMS_OUTPUT.PUT_LINE('SUELDO ACTUAL     : '||TO_CHAR(V_SUELDO_REGULAR, '$999G999G999'));
+            DBMS_OUTPUT.PUT_LINE('REAJUSTE 8.5%     : '||TO_CHAR(V_VAL_REAJ_2, '$999G999G999'));
+            DBMS_OUTPUT.PUT_LINE('SUELDO REAJUSTADO : '||TO_CHAR(V_SUELDO_REAJ_2, '$999G999G999'));
+            DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+    
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+        DBMS_OUTPUT.PUT_LINE('SIMULACIÓN 02 - CALCULO DE 20% DE AAUMENTO DE SUELDO');
+        DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+        DBMS_OUTPUT.PUT_LINE('NO CUMPLE CON LOS CRITERIOS DE RANGO DE SUELDO.');
+           
+
+    
+    END IF;
+    
+    
+    
+END;
+/
+
+--==============================================================================
+--CASO 04
+--==============================================================================
+
+DECLARE 
+    --DECLARACIÓN DE VARIABLES
+    V_DESC_TIPO_PROPIEDAD               TIPO_PROPIEDAD.DESC_TIPO_PROPIEDAD%TYPE; 
+    V_ID_TIPO_PROPIEDAD                 TIPO_PROPIEDAD.ID_TIPO_PROPIEDAD%TYPE;
+    V_CONT_PROPIEDAD                    NUMBER:=0;
+    V_CONT_VALOR_ARRIENDO               NUMBER:=0;
+    
+    --CURSOR: SEÑALA EL VALOR Y LA CANTIDAD DE VUELTAS QUE VA A DAR EL CICLO FOR.  
+    
+    CURSOR C_TIPO_PROPIEDAD IS 
+        SELECT 
+            ID_TIPO_PROPIEDAD, DESC_TIPO_PROPIEDAD
+        FROM
+            TIPO_PROPIEDAD;
+    
+BEGIN
+
+    --CICLO FOR:
+    FOR i IN C_TIPO_PROPIEDAD LOOP
+        V_DESC_TIPO_PROPIEDAD   := i.DESC_TIPO_PROPIEDAD;
+        V_ID_TIPO_PROPIEDAD     := i.ID_TIPO_PROPIEDAD;
+        
+        --RESETEAR VARIABLES CONTADORES
+        V_CONT_PROPIEDAD := 0;
+        V_CONT_VALOR_ARRIENDO := 0;
+        
+        --
+        
+        SELECT 
+            COUNT(*), SUM(VALOR_ARRIENDO)
+        INTO
+            V_CONT_PROPIEDAD, V_CONT_VALOR_ARRIENDO
+        FROM
+            PROPIEDAD
+        WHERE 
+            ID_TIPO_PROPIEDAD = V_ID_TIPO_PROPIEDAD;
+            
+        --IMPRESIÓN POR TERMINAL
+        DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+        DBMS_OUTPUT.PUT_LINE('CALCULO DE PROPIEDAD');
+        DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+        DBMS_OUTPUT.PUT_LINE('TIPO DE PROPIEDAD         : '||V_DESC_TIPO_PROPIEDAD);
+        DBMS_OUTPUT.PUT_LINE('CANTIDAD DE PROPIEDADES   : '||V_CONT_PROPIEDAD);
+        DBMS_OUTPUT.PUT_LINE('VALOR MENSUAL RECIBIDO    :'||TO_CHAR(V_CONT_VALOR_ARRIENDO, '$999G999G999'));
+        DBMS_OUTPUT.PUT_LINE('-------------------------------------------------------');
+        DBMS_OUTPUT.PUT_LINE('');
+            
+    END LOOP;
 
 END;
