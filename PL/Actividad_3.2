@@ -1,0 +1,132 @@
+---------------------------------------------------------------------------------
+--HOJA DE TRABAJO DE SQL
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+--CASO 01:
+---------------------------------------------------------------------------------
+
+--TABLAS A TRABAJAR
+
+SELECT * FROM EMPLEADO;
+DESC EMPLEADO;
+
+SELECT * FROM COMUNA;
+DESC COMUNA;
+
+SELECT * FROM PROY_MOVILIZACION;
+DESC PROY_MOVILIZACION;
+DROP TABLE PROY_MOVILIZACION;
+
+
+--CREACION DE TABLA PROY_MOVILIZACION
+
+CREATE TABLE PROY_MOVILIZACION(
+    ANNO_PROCESO               NUMBER(4)        NOT NULL,
+    NUMRUN_EMP                 VARCHAR2(15)     PRIMARY KEY NOT NULL,
+    NOMBRE_EMP                 VARCHAR2(100)    NOT NULL,
+    SUELDO_BASE                VARCHAR2(15)     NOT NULL, --$11.222.333
+    POR_MOV_NORMAL             VARCHAR2(4)      NOT NULL,
+    VAL_MOV_NORMAL             VARCHAR2(15)     NOT NULL,
+    VAL_MOV_ADICIONAL          VARCHAR2(15)     NOT NULL,
+    VAL_MOV_TOTAL              VARCHAR2(15)     NOT NULL
+);
+
+--CONSULTA DE DATOS A TABLA EMPLEADO
+
+
+    SELECT 
+        EMP.NUMRUN_EMP,
+        EMP.DVRUN_EMP,
+        EMP.PNOMBRE_EMP||' '||EMP.SNOMBRE_EMP||' '||EMP.APPATERNO_EMP||' '||EMP.APMATERNO_EMP AS NOMBRE_EMPLEADO,
+        EMP.SUELDO_BASE,
+        COM.NOMBRE_COMUNA
+    FROM
+        EMPLEADO EMP 
+        JOIN COMUNA COM ON(EMP.ID_COMUNA = COM.ID_COMUNA);
+        
+    COMMIT;
+---------------------------------------------------------------------------------
+--HOJA DE TRABAJO DE PL/SQL
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+--CASO 01: 
+---------------------------------------------------------------------------------
+DECLARE
+ --VARIABLES PARA CONSULTA
+    V_NUMRUN                EMPLEADO.NUMRUN_EMP%TYPE;
+    V_DVRUN                 EMPLEADO.DVRUN_EMP%TYPE;
+    V_NOMBRE                VARCHAR2(100);
+    V_SUELDO_BASE           EMPLEADO.SUELDO_BASE%TYPE;
+    V_NOMBRE_COMUNA         COMUNA.NOMBRE_COMUNA%TYPE;
+    
+    
+    --VARIABLES PARA PROCESO DE CALCULO
+    V_ANNO_PROCESO          NUMBER(4);
+    V_POR_MOV_NORMAL        NUMBER(3);
+    V_VAL_MOV_NORMAL        NUMBER(14);
+    V_VAL_MOV_ADICIONAL     NUMBER(14);
+    V_VAL_MOV_TOTAL         NUMBER(14);
+    
+BEGIN
+
+    --ESTABLECER AÑO DEL PROCESO:
+    V_ANNO_PROCESO := EXTRACT(YEAR FROM SYSDATE);
+    
+    --INGRESO PARAMETRICO DEL RUN
+    V_NUMRUN := &INGRESAR_RUN;
+    
+    
+    SELECT 
+        EMP.DVRUN_EMP,
+        EMP.PNOMBRE_EMP||' '||EMP.SNOMBRE_EMP||' '||EMP.APPATERNO_EMP||' '||EMP.APMATERNO_EMP AS NOMBRE_EMPLEADO,
+        EMP.SUELDO_BASE,
+        COM.NOMBRE_COMUNA
+    INTO
+        V_DVRUN, V_NOMBRE, V_SUELDO_BASE, V_NOMBRE_COMUNA
+    FROM
+        EMPLEADO EMP 
+        JOIN COMUNA COM ON(EMP.ID_COMUNA = COM.ID_COMUNA)
+    WHERE 
+        EMP.NUMRUN_EMP = V_NUMRUN;
+        
+    --CALCULAR EL PORCETANJE DE MOVILIZACIÓN NORMAL
+    V_POR_MOV_NORMAL := TRUNC(V_SUELDO_BASE / 100000);
+    
+    --VALOR DE MOVILIZACION NORMAL
+    V_VAL_MOV_NORMAL := V_SUELDO_BASE * (V_POR_MOV_NORMAL / 100);
+    
+    --CALCULAR EL PORCENTAJE DE MOVILIZACION ADICIONAL
+    CASE V_NOMBRE_COMUNA 
+        WHEN 'María Pinto' THEN   
+            V_VAL_MOV_ADICIONAL := 20000;
+        WHEN 'Curacaví' THEN   
+            V_VAL_MOV_ADICIONAL := 25000;
+        WHEN 'Talagante' THEN   
+            V_VAL_MOV_ADICIONAL := 30000;
+        WHEN 'El monte' THEN   
+            V_VAL_MOV_ADICIONAL := 35000;
+        WHEN 'Buin' THEN   
+            V_VAL_MOV_ADICIONAL := 40000;
+        ELSE 
+            V_VAL_MOV_ADICIONAL := 0;
+    END CASE;
+    
+    --CALCULAR EL VALOR DE MOVILIZACION TOTAL
+    V_VAL_MOV_TOTAL := V_VAL_MOV_NORMAL + V_VAL_MOV_ADICIONAL;
+    
+    --INSERTE DE LA TABLA PROY_MOVILIZACION
+    
+    INSERT INTO PROY_MOVILIZACION VALUES(
+        V_ANNO_PROCESO,
+        TO_CHAR(V_NUMRUN, '999G999G999')||'-'||V_DVRUN,
+        INITCAP(V_NOMBRE),
+        TO_CHAR(V_SUELDO_BASE, '$999G999G999'),
+        V_POR_MOV_NORMAL||'%',
+        TO_CHAR(V_VAL_MOV_NORMAL, '$999G999G999'),
+        TO_CHAR(V_VAL_MOV_ADICIONAL, '$999G999G999'),
+        TO_CHAR(V_VAL_MOV_TOTAL, '$999G999G999')
+);
+    
+COMMIT;  
+
+END;
